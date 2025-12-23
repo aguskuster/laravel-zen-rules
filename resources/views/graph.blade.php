@@ -315,6 +315,55 @@
         </div>
     </div>
 
+    <!-- Expression Editor Modal (GoRules.io style - Clean White Design) -->
+    <div id="expression-editor-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900" id="expression-modal-title">expression1</h2>
+                <button id="close-expression-modal" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="flex-1 overflow-y-auto p-6 bg-gray-50">
+                <!-- Header Row -->
+                <div class="grid grid-cols-12 gap-4 mb-4 px-2">
+                    <div class="col-span-3 text-sm font-medium text-gray-600">Key</div>
+                    <div class="col-span-9 text-sm font-medium text-gray-600">Expression</div>
+                </div>
+
+                <!-- Expression Rows Container -->
+                <div id="expression-rows-container" class="space-y-3">
+                    <!-- Rows will be dynamically added here -->
+                </div>
+
+                <!-- Add Row Button -->
+                <div class="mt-4">
+                    <button id="add-expression-row" class="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 hover:text-gray-700 transition-colors flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Add row
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-white">
+                <button id="cancel-expression-modal" class="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 font-medium transition-colors">
+                    Cancel
+                </button>
+                <button id="save-expression" class="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors">
+                    Save
+                </button>
+            </div>
+        </div>
+    </div>
+
     @livewireScripts
 </body>
 </html>

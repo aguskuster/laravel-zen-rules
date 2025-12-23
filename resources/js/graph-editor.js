@@ -831,6 +831,9 @@ class GraphEditor {
 
         // Setup Switch Modal
         this.setupSwitchModal();
+
+        // Setup Expression Modal
+        this.setupExpressionModal();
     }
 
     // Setup Switch Modal
@@ -887,13 +890,27 @@ class GraphEditor {
             return;
         }
 
+        // If it's an expression component, open expression modal instead
+        if (component.type === 'expression') {
+            this.openExpressionModal(component);
+            return;
+        }
+
         this.currentEditingComponent = component;
 
         // Set modal title
         document.getElementById('modal-component-name').textContent = component.id;
 
-        // Load existing JSON data or default
-        const jsonData = component.jsonData || '{\n  "country": "US",\n  "fee": 0\n}';
+        // Load existing JSON data or default based on component type
+        let defaultData = '{\n  "country": "US",\n  "fee": 0\n}';
+
+        if (component.type === 'request') {
+            defaultData = '{\n  "country": "US",\n  "fee": 0\n}';
+        } else if (component.type === 'response') {
+            defaultData = '{\n  "status": "success",\n  "message": "OK"\n}';
+        }
+
+        const jsonData = component.jsonData || defaultData;
         this.jsonEditor.value = jsonData;
 
         // Update line numbers
@@ -1322,6 +1339,176 @@ class GraphEditor {
 
         // Close modal
         this.closeSwitchModal();
+    }
+
+    // Setup Expression Modal
+    setupExpressionModal() {
+        this.expressionModal = document.getElementById('expression-editor-modal');
+        this.expressionRowsContainer = document.getElementById('expression-rows-container');
+
+        // Close modal buttons
+        document.getElementById('close-expression-modal').addEventListener('click', () => this.closeExpressionModal());
+        document.getElementById('cancel-expression-modal').addEventListener('click', () => this.closeExpressionModal());
+
+        // Click outside to close
+        this.expressionModal.addEventListener('click', (e) => {
+            if (e.target === this.expressionModal) {
+                this.closeExpressionModal();
+            }
+        });
+
+        // Add row button
+        document.getElementById('add-expression-row').addEventListener('click', () => {
+            this.addExpressionRow();
+        });
+
+        // Save button
+        document.getElementById('save-expression').addEventListener('click', () => {
+            this.saveExpressionConfiguration();
+        });
+    }
+
+    // Open Expression Modal
+    openExpressionModal(component) {
+        this.currentEditingComponent = component;
+
+        // Set modal title
+        document.getElementById('expression-modal-title').textContent = component.id;
+
+        // Initialize expression rows if not exists
+        if (!component.expressionRows || component.expressionRows.length === 0) {
+            component.expressionRows = [
+                { key: 'status', expression: 'transaction.amount > 1_000 ? "green" : "red"' },
+                { key: 'amount', expression: 'transaction.amount' }
+            ];
+        }
+
+        // Render expression rows
+        this.renderExpressionRows(component);
+
+        // Show modal
+        this.expressionModal.classList.remove('hidden');
+    }
+
+    // Close Expression Modal
+    closeExpressionModal() {
+        this.expressionModal.classList.add('hidden');
+        this.currentEditingComponent = null;
+    }
+
+    // Render expression rows
+    renderExpressionRows(component) {
+        this.expressionRowsContainer.innerHTML = '';
+
+        component.expressionRows.forEach((row, index) => {
+            const rowEl = this.createExpressionRowElement(row, index);
+            this.expressionRowsContainer.appendChild(rowEl);
+        });
+    }
+
+    // Create expression row element
+    createExpressionRowElement(row, index) {
+        const rowEl = document.createElement('div');
+        rowEl.className = 'grid grid-cols-12 gap-4 items-start bg-white p-4 rounded-lg border border-gray-200 group';
+        rowEl.dataset.rowIndex = index;
+
+        rowEl.innerHTML = `
+            <div class="col-span-3">
+                <input
+                    type="text"
+                    value="${this.escapeHtml(row.key)}"
+                    placeholder="key"
+                    class="expression-key-input w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    data-row-index="${index}"
+                />
+            </div>
+            <div class="col-span-9 relative">
+                <textarea
+                    rows="2"
+                    placeholder="Enter expression..."
+                    class="expression-value-input w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    data-row-index="${index}"
+                >${this.escapeHtml(row.expression)}</textarea>
+                <button
+                    class="remove-expression-row absolute -right-2 -top-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                    data-row-index="${index}"
+                    title="Remove row"
+                >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        `;
+
+        // Add event listeners
+        const keyInput = rowEl.querySelector('.expression-key-input');
+        const valueInput = rowEl.querySelector('.expression-value-input');
+        const removeBtn = rowEl.querySelector('.remove-expression-row');
+
+        keyInput.addEventListener('input', (e) => {
+            this.updateExpressionRow(index, 'key', e.target.value);
+        });
+
+        valueInput.addEventListener('input', (e) => {
+            this.updateExpressionRow(index, 'expression', e.target.value);
+        });
+
+        removeBtn.addEventListener('click', () => {
+            this.removeExpressionRow(index);
+        });
+
+        return rowEl;
+    }
+
+    // Add expression row
+    addExpressionRow() {
+        const component = this.currentEditingComponent;
+        if (!component) return;
+
+        component.expressionRows.push({ key: '', expression: '' });
+        this.renderExpressionRows(component);
+    }
+
+    // Update expression row
+    updateExpressionRow(index, field, value) {
+        const component = this.currentEditingComponent;
+        if (!component || !component.expressionRows[index]) return;
+
+        component.expressionRows[index][field] = value;
+    }
+
+    // Remove expression row
+    removeExpressionRow(index) {
+        const component = this.currentEditingComponent;
+        if (!component) return;
+
+        if (component.expressionRows.length <= 1) {
+            alert('You must have at least one expression row');
+            return;
+        }
+
+        component.expressionRows.splice(index, 1);
+        this.renderExpressionRows(component);
+    }
+
+    // Save expression configuration
+    saveExpressionConfiguration() {
+        const component = this.currentEditingComponent;
+        if (!component) return;
+
+        // Validate that all rows have keys
+        const invalidRows = component.expressionRows.filter(row => !row.key || row.key.trim() === '');
+
+        if (invalidRows.length > 0) {
+            alert('Please fill in all keys');
+            return;
+        }
+
+        console.log('Saved expression configuration for', component.id, ':', component.expressionRows);
+
+        // Close modal
+        this.closeExpressionModal();
     }
 
     // Highlight expression syntax

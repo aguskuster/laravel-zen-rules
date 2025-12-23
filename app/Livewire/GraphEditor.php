@@ -66,6 +66,27 @@ class GraphEditor extends Component
     public ?string $editingSwitchId = null;
 
     /**
+     * Expression configuration modal state
+     *
+     * @var bool
+     */
+    public bool $showExpressionModal = false;
+
+    /**
+     * Current expression component being edited
+     *
+     * @var string|null
+     */
+    public ?string $editingExpressionId = null;
+
+    /**
+     * Expression rows for the current component
+     *
+     * @var array<int, array{key: string, expression: string}>
+     */
+    public array $expressionRows = [];
+
+    /**
      * Initialize the component
      *
      * @return void
@@ -173,6 +194,62 @@ class GraphEditor extends Component
     {
         $this->showSwitchModal = false;
         $this->editingSwitchId = null;
+    }
+
+    /**
+     * Open expression configuration modal
+     *
+     * @param string $componentId
+     * @return void
+     */
+    public function openExpressionModal(string $componentId): void
+    {
+        $this->editingExpressionId = $componentId;
+
+        // Load existing expression rows from component config
+        $component = collect($this->components)->firstWhere('id', $componentId);
+        $this->expressionRows = $component['config']['rows'] ?? [
+            ['key' => 'status', 'expression' => 'len(user.servers) > 2 ? "very-active" : len(user.servers) > 0 ? "active" : "inactive"'],
+            ['key' => 'admin', 'expression' => 'user.role == "super" ? "admin" : "not admin"'],
+        ];
+
+        $this->showExpressionModal = true;
+    }
+
+    /**
+     * Close expression configuration modal
+     *
+     * @return void
+     */
+    public function closeExpressionModal(): void
+    {
+        $this->showExpressionModal = false;
+        $this->editingExpressionId = null;
+        $this->expressionRows = [];
+    }
+
+    /**
+     * Save expression configuration
+     *
+     * @param array<int, array{key: string, expression: string}> $rows
+     * @return void
+     */
+    #[On('expression-config-saved')]
+    public function saveExpressionConfig(array $data): void
+    {
+        $componentId = $data['componentId'];
+        $rows = $data['rows'];
+
+        $this->components = collect($this->components)
+            ->map(function ($componentData) use ($componentId, $rows) {
+                if ($componentData['id'] === $componentId) {
+                    $componentData['config']['rows'] = $rows;
+                }
+                return $componentData;
+            })
+            ->toArray();
+
+        $this->closeExpressionModal();
     }
 
     /**
