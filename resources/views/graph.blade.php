@@ -52,7 +52,7 @@
                                 </button>
                             </div>
                             <div class="px-4 py-3">
-                                <button class="text-sm text-blue-600 dark:text-blue-400 hover:underline">Configure</button>
+                                <button class="configure-btn text-sm text-blue-600 dark:text-blue-400 hover:underline" data-component-id="request-0">Configure</button>
                             </div>
                         </div>
 
@@ -70,8 +70,8 @@
                                 </button>
                             </div>
                             <div class="px-4 py-3 flex gap-2">
-                                <button class="text-sm text-blue-600 dark:text-blue-400 hover:underline">Edit Table</button>
-                                <button class="text-sm text-blue-600 dark:text-blue-400 hover:underline">Settings</button>
+                                <button class="configure-btn text-sm text-blue-600 dark:text-blue-400 hover:underline" data-component-id="decision-table-0">Edit Table</button>
+                                <button class="configure-btn text-sm text-blue-600 dark:text-blue-400 hover:underline" data-component-id="decision-table-0">Settings</button>
                             </div>
                         </div>
                     </div>
@@ -182,6 +182,134 @@
                             <span class="text-sm font-medium text-slate-700 dark:text-slate-200">Decision</span>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JSON Editor Modal -->
+    <div id="json-editor-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white dark:bg-slate-800 rounded-lg shadow-2xl w-full max-w-4xl h-5/6 flex flex-col">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+                <div class="flex items-center gap-4">
+                    <h2 class="text-lg font-semibold text-slate-800 dark:text-slate-100" id="modal-component-name">request</h2>
+                    <div class="flex gap-2">
+                        <button class="tab-btn active px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400" data-tab="schema">
+                            Schema
+                        </button>
+                        <button class="tab-btn px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100" data-tab="graph">
+                            Graph
+                        </button>
+                    </div>
+                </div>
+                <button id="close-modal" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="flex-1 overflow-hidden">
+                <!-- Schema Tab -->
+                <div id="schema-tab" class="h-full flex">
+                    <!-- Line Numbers -->
+                    <div class="bg-slate-50 dark:bg-slate-900 px-4 py-4 text-right text-sm text-slate-400 dark:text-slate-500 font-mono select-none border-r border-slate-200 dark:border-slate-700">
+                        <div id="line-numbers">1<br>2<br>3<br>4<br>5</div>
+                    </div>
+
+                    <!-- JSON Editor -->
+                    <div class="flex-1 relative">
+                        <textarea
+                            id="json-editor"
+                            class="w-full h-full p-4 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 font-mono text-sm resize-none focus:outline-none"
+                            spellcheck="false"
+                            placeholder='{\n  "key": "value"\n}'
+                        >{
+  "country": "US",
+  "fee": 0
+}</textarea>
+                        <div id="json-error" class="hidden absolute bottom-4 left-4 right-4 bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-400 px-4 py-2 rounded text-sm"></div>
+                    </div>
+                </div>
+
+                <!-- Graph Tab (hidden by default) -->
+                <div id="graph-tab" class="hidden h-full p-6">
+                    <p class="text-slate-600 dark:text-slate-400">Graph view coming soon...</p>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="flex items-center justify-between px-6 py-4 border-t border-slate-200 dark:border-slate-700">
+                <div class="flex items-center gap-2">
+                    <label class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                        <input type="checkbox" id="preview-changes" class="rounded">
+                        <span>Preview changes</span>
+                    </label>
+                </div>
+                <div class="flex gap-2">
+                    <button id="cancel-modal" class="px-4 py-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100">
+                        Cancel
+                    </button>
+                    <button id="save-json" class="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium">
+                        Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Switch Editor Modal -->
+    <div id="switch-editor-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white dark:bg-slate-800 rounded-lg shadow-2xl w-full max-w-4xl max-h-5/6 flex flex-col">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+                <div class="flex items-center gap-4">
+                    <h2 class="text-lg font-semibold text-slate-800 dark:text-slate-100" id="switch-modal-title">Switch Configuration</h2>
+                    <div class="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-700 rounded-lg">
+                        <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Mode:</label>
+                        <select id="switch-mode" class="text-xs bg-transparent border-none focus:outline-none text-slate-700 dark:text-slate-200 font-medium cursor-pointer">
+                            <option value="first">First Match</option>
+                            <option value="all">All Matches</option>
+                        </select>
+                    </div>
+                </div>
+                <button id="close-switch-modal" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="flex-1 overflow-y-auto p-6">
+                <div id="switch-conditions-editor" class="space-y-3">
+                    <!-- Conditions will be rendered here -->
+                </div>
+
+                <div class="mt-4 flex gap-2">
+                    <button id="add-switch-condition" class="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium">
+                        + Add Condition
+                    </button>
+                    <button id="add-switch-else" class="px-4 py-2 text-sm bg-slate-600 hover:bg-slate-700 text-white rounded-lg font-medium">
+                        + Add Else
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="flex items-center justify-between px-6 py-4 border-t border-slate-200 dark:border-slate-700">
+                <div class="text-xs text-slate-500 dark:text-slate-400">
+                    <span class="font-medium">Tip:</span> Use operators like ==, !=, >, <, >=, <=, IN, NOT IN
+                </div>
+                <div class="flex gap-2">
+                    <button id="cancel-switch-modal" class="px-4 py-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100">
+                        Cancel
+                    </button>
+                    <button id="save-switch" class="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium">
+                        Save
+                    </button>
                 </div>
             </div>
         </div>
